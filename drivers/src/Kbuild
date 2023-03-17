@@ -1,0 +1,48 @@
+obj-m += tas2101.o
+ccflags-y += -DCONFIG_DVB_TAS2101=1
+
+obj-m += si2168.o
+obj-m += si2183.o
+obj-m += mxl603.o
+obj-m += mtv23x.o
+obj-m += m88rs6060.o
+obj-m += gx1503.o
+
+obj-m += tas2971.o
+ccflags-y += -DCONFIG_DVB_TAS2971=1
+
+obj-m += mxl58x.o
+ccflags-y += -DCONFIG_DVB_MXL58X=1
+
+obj-m += si2157.o
+ccflags-y += -DCONFIG_MEDIA_CONTROLLER=1
+
+obj-m += av201x.o
+ccflags-y += -DCONFIG_MEDIA_TUNER_AV201X=1
+
+obj-m += stv091x.o
+ccflags-y += -DCONFIG_DVB_STV091X=1
+
+obj-m += stv6120.o
+ccflags-y += -DCONFIG_MEDIA_TUNER_STV6120=1
+
+obj-m += mn88436.o
+ccflags-y += -DCONFIG_DVB_MN88436=1
+
+obj-m += rda5816.o
+ccflags-y += -DCONFIG_MEDIA_TUNER_RDA5816=1
+
+obj-m += gx1133.o
+ccflags-y += -DCONFIG_DVB_GX1133=1
+
+obj-m += cxd2878.o
+ccflags-y += -DCONFIG_DVB_CXD2878=1
+
+tbsecp3-objs	:= tbsecp3-core.o tbsecp3-cards.o tbsecp3-i2c.o tbsecp3-dma.o tbsecp3-dvb.o tbsecp3-ca.o tbsecp3-asi.o
+obj-m += tbsecp3.o
+
+ccflags-y += -Idrivers/media/tuners
+ccflags-y += -Idrivers/media/dvb-core
+ccflags-y += -Idrivers/media/dvb-frontends
+ccflags-y += -I$(TBSDIR)/stid135
+
