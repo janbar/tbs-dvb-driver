@@ -348,16 +348,16 @@ static int si2183_read_status(struct dvb_frontend *fe, enum fe_status *status)
 			c->modulation = APSK_16;
 			break;
 			case 0x17:
-			c->modulation = APSK_8L;
+			c->modulation = APSK_8_L;
 			break;
 			case 0x18:
-			c->modulation = APSK_16L;
+			c->modulation = APSK_16_L;
 			break;
 			case 0x15:
 			c->modulation = APSK_32;
 			break;
 			case 0x19:
-			c->modulation = APSK_32L;
+			c->modulation = APSK_32_L;
 			break;
 			case 0x1a:
 			c->modulation = APSK_32;
@@ -1799,7 +1799,7 @@ err:
 	return ret;
 }
 
-static int si2183_remove(struct i2c_client *client)
+static void si2183_remove(struct i2c_client *client)
 {
 	struct si2183_dev *dev = i2c_get_clientdata(client);
 
@@ -1822,8 +1822,6 @@ static int si2183_remove(struct i2c_client *client)
 	dev->fe.demodulator_priv = NULL;
 
 	kfree(dev);
-
-	return 0;
 }
 
 static const struct i2c_device_id si2183_id_table[] = {
