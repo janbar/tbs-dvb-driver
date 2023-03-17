@@ -25,19 +25,8 @@
 #include <linux/dvb/frontend.h>
 #include "tas2101.h"
 
-#if IS_REACHABLE(CONFIG_DVB_TAS2971)
 extern struct dvb_frontend *tas2971_attach(
 	const struct tas2101_config *cfg,
 	struct i2c_adapter *i2c);
-#else
-static inline struct dvb_frontend *tas2971_attach(
-	const struct tas2101_config *cfg,
-	struct i2c_adapter *i2c)
-{
-	dev_warn(&i2c->dev, "%s: driver disabled by Kconfig\n", __func__);
-	return NULL;
-}
-
-#endif
 
 #endif /* TAS2101_H */

@@ -47,18 +47,7 @@ struct stv091x_cfg {
 	void (*read_eeprom) (struct i2c_adapter *i2c,u8 reg, u8 *buf);
 };
 
-#if IS_REACHABLE(CONFIG_DVB_STV091X)
 extern struct dvb_frontend *stv091x_attach(struct i2c_adapter *i2c,
 					   struct stv091x_cfg *cfg, int nr);
-#else
-static inline struct dvb_frontend *stv091x_attach(struct i2c_adapter *i2c,
-						  struct stv091x_cfg *cfg,
-						  int nr)
-{
-	pr_warn("%s: driver disabled by Kconfig\n", __func__);
-	return NULL;
-}
-
-#endif
 
 #endif

@@ -79,19 +79,8 @@ struct cxd2878_config{
 	
 };
 
-#if IS_REACHABLE(CONFIG_DVB_CXD2878)
 extern struct dvb_frontend *cxd2878_attach(
 	const struct cxd2878_config *config,
 	struct i2c_adapter *i2c);
-#else
-static inline struct dvb_frontend *cxd2878_attach(
-	const struct cxd2878_config *config,
-	struct i2c_adapter *i2c)
-{
-	dev_warn(&i2c->dev, "%s: driver disabled by Kconfig\n", __func__);
-	return NULL;
-}
-
-#endif
 
 #endif

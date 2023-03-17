@@ -1,3 +1,5 @@
+#ifndef _FRONTENT_EXTRA_H_
+#define _FRONTENT_EXTRA_H_
 
 struct ecp3_info
 {
@@ -114,3 +116,4 @@ enum fe_rolloff_extra {
         ROLLOFF_5,
 };
 
+#endif

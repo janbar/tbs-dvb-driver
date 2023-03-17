@@ -29,21 +29,8 @@ struct mxl58x_cfg {
 	void (*read_eeprom) (struct i2c_adapter *i2c,u8 reg, u8 *buf);
 };
 
-#if IS_REACHABLE(CONFIG_DVB_MXL58X)
-
 extern struct dvb_frontend *mxl58x_attach(struct i2c_adapter *i2c,
 					  struct mxl58x_cfg *cfg,
 					  u32 demod);
-#else
-
-static inline struct dvb_frontend *mxl58x_attach(struct i2c_adapter *i2c,
-						 struct mxl58x_cfg *cfg,
-						 u32 demod)
-{
-	pr_warn("%s: driver disabled by Kconfig\n", __func__);
-	return NULL;
-}
-
-#endif
 
 #endif

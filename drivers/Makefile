@@ -1,8 +1,7 @@
-TBSDIR := $(shell pwd)
 SRC := $(shell pwd)/src
 
 all:
-	$(MAKE) -C $(KERNELDIR) M=$(SRC) TBSDIR=$(TBSDIR) modules
+	$(MAKE) -C $(KERNELDIR) M=$(SRC) modules
 
 clean:
 	$(MAKE) -C $(KERNELDIR) M=$(SRC) clean

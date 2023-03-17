@@ -58,23 +58,9 @@ struct tas2101_config {
 
 
 
-#if IS_REACHABLE(CONFIG_DVB_TAS2101)
 extern struct dvb_frontend *tas2101_attach(
 	const struct tas2101_config *cfg,
 	struct i2c_adapter *i2c);
 extern struct i2c_adapter *tas2101_get_i2c_adapter(struct dvb_frontend *fe, int bus);
-#else
-static inline struct dvb_frontend *tas2101_attach(
-	const struct tas2101_config *cfg,
-	struct i2c_adapter *i2c)
-{
-	dev_warn(&i2c->dev, "%s: driver disabled by Kconfig\n", __func__);
-	return NULL;
-}
-static struct i2c_adapter *tas2101_get_i2c_adapter(struct dvb_frontend *fe, int bus)
-{
-	return NULL;
-}
-#endif
 
 #endif /* TAS2101_H */

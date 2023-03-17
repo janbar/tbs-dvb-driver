@@ -46,25 +46,9 @@ struct gx1133_config {
 
 };
 
-
-
-#if IS_REACHABLE(CONFIG_DVB_GX1133)
 extern struct dvb_frontend *gx1133_attach(
 	const struct gx1133_config *cfg,
 	struct i2c_adapter *i2c);
 extern struct i2c_adapter *gx1133_get_i2c_adapter(struct dvb_frontend *fe, int bus);
-#else
-static inline struct dvb_frontend *gx1133_attach(
-	const struct gx1133_config *cfg,
-	struct i2c_adapter *i2c)
-{
-	dev_warn(&i2c->dev, "%s: driver disabled by Kconfig\n", __func__);
-	return NULL;
-}
-static struct i2c_adapter *gx1133_get_i2c_adapter(struct dvb_frontend *fe, int bus)
-{
-	return NULL;
-}
-#endif
 
 #endif /* gx1133_H */
