@@ -1012,7 +1012,9 @@ static int Start(struct stv *state, struct dtv_frontend_properties *p)
 	if (p->scrambling_sequence_index)
 		SetPLS(state, 1, p->scrambling_sequence_index);
 
-//	SetModcode(state, p->modcode);
+#ifdef DTV_MODCODE
+	SetModcode(state, p->modcode);
+#endif
 
 	/* Set the Init Symbol rate*/
 	symb = MulDiv32(p->symbol_rate, 65536, state->base->mclk);
