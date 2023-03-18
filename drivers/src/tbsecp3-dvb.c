@@ -37,6 +37,7 @@
 #include "gx1503.h"
 #include "tas2971.h"
 
+#include "stid135.h"
 #include "rda5816.h"
 #include "m88rs6060.h"
 #include "gx1133.h"
@@ -999,6 +1000,76 @@ static u32  Set_TSparam(struct i2c_adapter *i2c,int tuner,int time,bool flag)
 	return 1;
 
 }
+
+static struct stid135_cfg tbs6903x_stid135_cfg = {
+	.adr		= 0x68,
+	.clk		= 27,
+	.ts_mode	= TS_2PAR,
+	.set_voltage	= NULL,
+	.write_properties = ecp3_spi_write, 
+	.read_properties = ecp3_spi_read,
+	.write_eeprom = ecp3_eeprom_write, 
+	.read_eeprom = ecp3_eeprom_read,
+	.set_TSsampling = NULL,
+	.set_TSparam = NULL,
+	.vglna = 0,
+};
+
+static struct stid135_cfg tbs6909x_stid135_cfg = {
+	.adr		= 0x68,
+	.clk		= 27,
+	.ts_mode	= TS_STFE,
+	.set_voltage	= max_set_voltage,
+	.write_properties = ecp3_spi_write, 
+	.read_properties = ecp3_spi_read,
+	.write_eeprom = ecp3_eeprom_write, 
+	.read_eeprom = ecp3_eeprom_read,
+	.set_TSsampling = NULL,
+	.set_TSparam = NULL,
+	.vglna = 0,
+	
+};
+static struct stid135_cfg tbs6903x_V2_stid135_cfg = {
+	.adr		= 0x68,
+	.clk		= 27,
+	.ts_mode	= TS_2PAR,
+	.set_voltage	= NULL,
+	.write_properties = ecp3_spi_write, 
+	.read_properties = ecp3_spi_read,
+	.write_eeprom = ecp3_eeprom_write, 
+	.read_eeprom = ecp3_eeprom_read,
+	.set_TSsampling = NULL,
+	.set_TSparam = NULL,
+	.vglna = 1,
+};
+
+static struct stid135_cfg tbs6909x_V2_stid135_cfg = {
+	.adr		= 0x68,
+	.clk		= 27,
+	.ts_mode	= TS_STFE,
+	.set_voltage	= max_set_voltage,
+	.write_properties = ecp3_spi_write, 
+	.read_properties = ecp3_spi_read,
+	.write_eeprom = ecp3_eeprom_write, 
+	.read_eeprom = ecp3_eeprom_read,
+	.set_TSsampling = NULL,
+	.set_TSparam = NULL,
+	.vglna = 2,
+};
+
+static struct stid135_cfg tbs6912_stid135_cfg = {
+	.adr		= 0x68,
+	.clk		= 27,
+	.ts_mode	= TS_2PAR,
+	.set_voltage	= NULL,
+	.write_properties = ecp3_spi_write, 
+	.read_properties = ecp3_spi_read,
+	.write_eeprom = ecp3_eeprom_write, 
+	.read_eeprom = ecp3_eeprom_read,
+	.set_TSsampling = Set_TSsampling,
+	.set_TSparam = Set_TSparam,
+	.vglna = false,
+};
 
 static struct rda5816_config rda5816_cfg[] = {
 	{
@@ -2185,10 +2256,40 @@ static int tbsecp3_frontend_attach(struct tbsecp3_adapter *adapter)
 		break;
 
 	case TBSECP3_BOARD_TBS6909X:
+		if(pci->subsystem_device==0x0010)
+			adapter->fe = dvb_attach(stid135_attach, i2c,
+				&tbs6909x_stid135_cfg, adapter->nr, adapter->nr/2);
+		else
+			adapter->fe = dvb_attach(stid135_attach, i2c,
+				&tbs6909x_V2_stid135_cfg, adapter->nr, adapter->nr/2); 	
+
+		if (adapter->fe == NULL)
+			goto frontend_atach_fail;
+		break;
+
 	case TBSECP3_BOARD_TBS6903X:
 	case TBSECP3_BOARD_TBS6912:
-		dev_warn(&dev->pci_dev->dev, "unsupported card\n");
-		return -ENODEV;
+		if(pci->subsystem_vendor==0x6912)
+			adapter->fe = dvb_attach(stid135_attach, i2c,
+					&tbs6912_stid135_cfg, adapter->nr ? 2 : 0, adapter->nr ? 3 : 0);
+		else if(pci->subsystem_device==0x0021)
+			adapter->fe = dvb_attach(stid135_attach, i2c,
+				&tbs6903x_V2_stid135_cfg, adapter->nr ? 2 : 0, adapter->nr ? 3 : 0);
+		else
+			adapter->fe = dvb_attach(stid135_attach, i2c,
+				&tbs6903x_stid135_cfg, adapter->nr ? 2 : 0, adapter->nr ? 3 : 0);
+
+		if (adapter->fe == NULL)
+			goto frontend_atach_fail;
+
+		if (tbsecp3_attach_sec(adapter, adapter->fe) == NULL) {
+			dev_warn(&dev->pci_dev->dev,
+				"error attaching lnb control on adapter %d\n",
+				adapter->nr);
+		}
+		if(pci->subsystem_vendor==0x6912)
+			tbsecp3_ca_init(adapter, adapter->nr);
+		
 		break;
 
 	default:

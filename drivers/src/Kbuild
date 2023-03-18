@@ -16,6 +16,11 @@ obj-m += rda5816.o
 obj-m += gx1133.o
 obj-m += cxd2878.o
 
+stid135-objs := stid135/stid135-fe.o stid135/chip.o stid135/stfe_utilities.o stid135/oxford_anafe_func.o
+stid135-objs += stid135/stid135_init.o stid135/stid135_drv.o
+ccflags-y += -DHOST_PC
+obj-m += stid135.o
+
 tbsecp3-objs := tbsecp3-core.o tbsecp3-cards.o tbsecp3-i2c.o tbsecp3-dma.o tbsecp3-dvb.o tbsecp3-ca.o tbsecp3-asi.o
 obj-m += tbsecp3.o
 
@@ -26,4 +31,6 @@ ccflags-y += -DCONFIG_MEDIA_CONTROLLER_DVB=1
 ccflags-y += -Idrivers/media/tuners
 ccflags-y += -Idrivers/media/dvb-core
 ccflags-y += -Idrivers/media/dvb-frontends
+ccflags-y += -I$(M)/stid135
+ccflags-y += -I$(M)
 
