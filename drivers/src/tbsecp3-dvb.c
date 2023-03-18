@@ -43,6 +43,11 @@
 #include "gx1133.h"
 #include "cxd2878.h"
 
+#include <linux/version.h>
+
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 5, 0)
+#define i2c_client_has_driver(client)	(client != NULL && client->dev.driver)
+#endif
 
 DVB_DEFINE_MOD_OPT_ADAPTER_NR(adapter_nr);
 
