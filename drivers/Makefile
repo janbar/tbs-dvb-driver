@@ -1,3 +1,4 @@
+KERNELDIR ?= /lib/modules/$(shell uname -r)/build
 SRC := $(shell pwd)/src
 
 all:
@@ -8,4 +9,3 @@ clean:
 
 modules_install:
 	$(MAKE) -C $(KERNELDIR) M=$(SRC) modules_install
-
