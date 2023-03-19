@@ -27,6 +27,9 @@ obj-m += tbsecp3.o
 tbs_pcie-mod-objs += tbsmod/tbsmod.o
 obj-m += tbs_pcie-mod.o
 
+tbs_pcie-ci-objs += tbsci/tbsci.o
+obj-m += tbs_pcie-ci.o
+
 ccflags-y += -DCONFIG_MEDIA_CONTROLLER=1
 ccflags-y += -DCONFIG_MEDIA_CONTROLLER_DVB=1
 
