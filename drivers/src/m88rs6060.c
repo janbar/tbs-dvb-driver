@@ -3186,6 +3186,7 @@ static int m88rs6060_tune(struct dvb_frontend *fe, bool re_tune,
 
 	return 0;
 }
+
 static int m88rs6060_get_frontend(struct dvb_frontend *fe, struct dtv_frontend_properties *p)
 {
 	struct i2c_client *client = fe->demodulator_priv;
@@ -3584,7 +3585,6 @@ static int m88rs6060_probe(struct i2c_client *client,
 			si5351_set_freq(priv,41666666,0,SI5351_CLK0);	
 			si5351_set_freq(priv,41666666,0,SI5351_CLK1);
 		}
-		
 	 }
 
 	dev->fe.demodulator_priv = client;
@@ -3598,7 +3598,6 @@ static int m88rs6060_probe(struct i2c_client *client,
 	m88rs6060_ready(dev);
 	 
 	return 0;
-
 
  err_regmap_exit:
 	regmap_exit(dev->regmap);
