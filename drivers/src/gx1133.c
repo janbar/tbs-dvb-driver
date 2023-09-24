@@ -1177,17 +1177,17 @@ static int gx1133_set_frontend(struct dvb_frontend *fe)
 	if (ret)
 		return ret;
 
-		if (fe->ops.tuner_ops.set_params) {
+	if (fe->ops.tuner_ops.set_params) {
 #ifndef GX1133_USE_I2C_MUX
-			if (fe->ops.i2c_gate_ctrl)
-				fe->ops.i2c_gate_ctrl(fe, 1);
+		if (fe->ops.i2c_gate_ctrl)
+			fe->ops.i2c_gate_ctrl(fe, 1);
 #endif
-			fe->ops.tuner_ops.set_params(fe);
+		fe->ops.tuner_ops.set_params(fe);
 #ifndef GX1133_USE_I2C_MUX
-			if (fe->ops.i2c_gate_ctrl)
-				fe->ops.i2c_gate_ctrl(fe, 0);
+		if (fe->ops.i2c_gate_ctrl)
+			fe->ops.i2c_gate_ctrl(fe, 0);
 #endif
-		}
+	}
 
 
 	gx1133_rd(priv,DVB_S2,GX1133_RST,&temp);

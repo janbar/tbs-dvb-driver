@@ -2414,8 +2414,7 @@ static struct dvb_frontend_ops mtv23x_ops = {
 	.read_ber = mtv23x_read_ber,
 };
 
-static int mtv23x_probe(struct i2c_client*client,
-						const struct i2c_device_id *id)
+static int mtv23x_probe(struct i2c_client*client)
 {
 	struct mtv23x_config *cfg = client->dev.platform_data;
 	struct mtv23x_dev *dev ;

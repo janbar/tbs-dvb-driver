@@ -392,7 +392,7 @@ static int si5351_write_bulk(struct si5351_priv *priv,u8 reg, u8 len,u8*data)
 	 if (ret != 1) {
 		dev_err(&i2c->dev,
 			"si5351(ret=%i, reg=0x%02x, value=0x%02x)\n",
-			 ret, reg, data);
+			 ret, reg, *data);
 		return -EREMOTEIO;
 		}	
 	 return 0;
@@ -3464,8 +3464,7 @@ static struct si5351_base*match_si5351_base(struct i2c_adapter*i2c,int clk_port)
 	return NULL;
 
 }
-static int m88rs6060_probe(struct i2c_client *client,
-			   const struct i2c_device_id *id)
+static int m88rs6060_probe(struct i2c_client *client)
 {
 	struct m88rs6060_cfg *cfg = client->dev.platform_data;
 	struct m88rs6060_dev *dev;

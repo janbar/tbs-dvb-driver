@@ -468,8 +468,7 @@ static const struct dvb_frontend_ops gx1503_ops = {
 		
 };
 
-static int gx1503_probe(struct i2c_client *client,
-		const struct i2c_device_id *id)
+static int gx1503_probe(struct i2c_client *client)
 {
 	struct gx1503_config *cfg = client->dev.platform_data;
 	struct gx1503_dev *dev;

@@ -55,7 +55,7 @@ static int mxl603_ctrl_programRegisters(struct i2c_client *client, PMXL603_REG_C
 		// Check if partial bits of register were updated
 		if (ctrlRegInfoPtr[i].mask != 0xFF)  
 		{
-			ret = reg_read(dev->client,ctrlRegInfoPtr[i].regAddr, (int)&tmp);
+			ret = reg_read(dev->client,ctrlRegInfoPtr[i].regAddr, &tmp);
 			if (ret) break;;
 		}
 
@@ -496,8 +496,7 @@ static const struct dvb_tuner_ops mxl603_ops ={
 
 };
 
-static int mxl603_probe(struct i2c_client *client,
-		const struct i2c_device_id *id)
+static int mxl603_probe(struct i2c_client *client)
 {
 	struct mxl603_config *cfg = client->dev.platform_data;
 	struct dvb_frontend *fe = cfg->fe;

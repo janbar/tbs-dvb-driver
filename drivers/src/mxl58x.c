@@ -554,7 +554,7 @@ static int read_status(struct dvb_frontend *fe, enum fe_status *status)
 		p->pre_bit_count.len = 1;
 		p->pre_bit_count.stat[0].scale = FE_SCALE_COUNTER;
 		p->pre_bit_count.stat[0].uvalue = reg[3];
-		dev_dbg(&state->base->i2c->dev,"pre_bit_error=%u pre_bit_count=%u\n", p->pre_bit_error.stat[0].uvalue, p->pre_bit_count.stat[0].uvalue);
+		dev_dbg(&state->base->i2c->dev,"pre_bit_error=%llu pre_bit_count=%llu\n", p->pre_bit_error.stat[0].uvalue, p->pre_bit_count.stat[0].uvalue);
 		break;
 	default:
 		break;
@@ -589,7 +589,7 @@ static int read_status(struct dvb_frontend *fe, enum fe_status *status)
 	default:
 		break;
 	}
-	dev_dbg(&state->base->i2c->dev,"post_bit_error=%u post_bit_count=%u\n", p->post_bit_error.stat[0].uvalue, p->post_bit_count.stat[0].uvalue);
+	dev_dbg(&state->base->i2c->dev,"post_bit_error=%llu post_bit_count=%llu\n", p->post_bit_error.stat[0].uvalue, p->post_bit_count.stat[0].uvalue);
 
 	return 0;
 }
@@ -988,7 +988,7 @@ static int write_fw_segment(struct mxl *state,
 
 static int do_firmware_download(struct mxl *state,
 				u32 mbinBufferSize,
-				u8 *mbinBufferPtr)
+				const u8 *mbinBufferPtr)
 {
 	int status;
 	u32 index = 0;
@@ -1028,7 +1028,7 @@ static int do_firmware_download(struct mxl *state,
 }
 
 static int firmware_download(struct mxl *state, u32 mbinBufferSize,
-			     u8 *mbinBufferPtr)
+			     const u8 *mbinBufferPtr)
 {
 	int status;
 	u32 regData = 0;
