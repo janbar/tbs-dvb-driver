@@ -105,11 +105,11 @@ enum fe_code_rate_extra {
 	_FEC_28_45,
 	_FEC_32_45,
 	_FEC_77_90,
+	_FEC_11_45,
+	_FEC_4_15,
+	_FEC_14_45,
+	_FEC_7_15,
 
-	FEC_4_15,
-	FEC_7_15,
-	FEC_11_45,
-	FEC_14_45,
 	FEC_29_45,
 	FEC_31_45,
 };

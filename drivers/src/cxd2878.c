@@ -27,7 +27,7 @@ struct cxd_base{
 	struct mutex i2c_lock; //for two adapter at the same i2c bus
 	u8 adr		;		// 
 	u32 count	;		//
-	struct cxd2878_config *config;	
+	const struct cxd2878_config *config;
 
 };
 
