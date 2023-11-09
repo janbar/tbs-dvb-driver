@@ -112,6 +112,10 @@ enum fe_code_rate_extra {
 	FEC_31_45,
 	FEC_32_45,
 	FEC_77_90,
+	FEC_R_58,
+	FEC_R_60,
+	FEC_R_62,
+	FEC_R_5E,
 };
 
 enum fe_rolloff_extra {
