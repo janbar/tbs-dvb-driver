@@ -12,7 +12,7 @@
     SONY_ASCOT3_XTAL_24000KHz,    /**< 24 MHz */
     SONY_ASCOT3_XTAL_41000KHz     /**< 41 MHz */
 } ;
- 
+
 #define SONY_DEMOD_MAKE_IFFREQ_CONFIG(iffreq) ((u32)(((iffreq)/48.0)*16777216.0 + 0.5))
 #define SONY_DEMOD_ATSC_MAKE_IFFREQ_CONFIG(iffreq) ((u32)(((iffreq)/24.0)*4294967296.0 + 0.5))
 
@@ -47,7 +47,7 @@ struct cxd2878_config{
     u8 ts_clk;
 	/**
 	 @brief Disable/Enable TS clock during specified TS region.
-	
+
 			bit flags: ( can be bitwise ORed )
 			- 0 : Always Active
 			- 1 : Disable during TS packet gap (default)
@@ -59,7 +59,7 @@ struct cxd2878_config{
     u8 ts_clk_mask;
 		/**
 		 @brief Disable/Enable TSVALID during specified TS region.
-		
+
 				bit flags: ( can be bitwise ORed )
 				- 0 : Always Active
 				- 1 : Disable during TS packet gap (default)
@@ -71,12 +71,18 @@ struct cxd2878_config{
 	u8 ts_valid;
 
 	u8 atscCoreDisable;
-	
-	bool lock_flag;  //for usb device 
+
+	bool lock_flag;  //for usb device
 	//for ecp3 update
 	void (*write_properties) (struct i2c_adapter *i2c,u8 reg, u32 buf);
 	void (*read_properties) (struct i2c_adapter *i2c,u8 reg, u32 *buf);
-	
+	// EEPROM access
+	void (*write_eeprom) (struct i2c_adapter *i2c,u8 reg, u8 buf);
+	void (*read_eeprom) (struct i2c_adapter *i2c,u8 reg, u8 *buf);
+
+	//for 6590SE mode change(T or s);
+	void (*RF_switch)(struct i2c_adapter * i2c,u8 rf_in,u8 flag);
+	u8 rf_port; //for change command
 };
 
 extern struct dvb_frontend *cxd2878_attach(
