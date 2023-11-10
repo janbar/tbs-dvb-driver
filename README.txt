@@ -22,15 +22,15 @@ HOWTO
 =====
 
 cd /usr/src/
-wget https://github.com/janbar/tbs-dvb-driver/archive/refs/tags/5.19.1.tar.gz
-tar xvfz 5.19.1.tar.gz
+wget https://github.com/janbar/tbs-dvb-driver/archive/refs/tags/5.19.2.tar.gz
+tar xvfz 5.19.2.tar.gz
 
-tar xvfz tbs-dvb-driver-5.19.1/dvb-firmwares.tar.gz -C /lib/firmware
+tar xvfz tbs-dvb-driver-5.19.2/dvb-firmwares.tar.gz -C /lib/firmware
 chown root:root /lib/firmware/*.fw
 
-dkms add tbs-dvb-driver/5.19.1
-dkms build tbs-dvb-driver/5.19.1
-dkms install tbs-dvb-driver/5.19.1
+dkms add tbs-dvb-driver/5.19.2
+dkms build tbs-dvb-driver/5.19.2
+dkms install tbs-dvb-driver/5.19.2
 
 Once installed, the modules will be rebuilt and deployed when upgrading the
 kernel. If not for any reason, type manually the install step with dkms.
