@@ -5,8 +5,6 @@
  * Copyright (c) 2021 Davin zhang <Davin@tbsdtv.com> www.Turbosight.com
  *
 */
-#include <media/dvb_math.h>
-
 #include "m88rs6060_priv.h"
 #include <linux/mutex.h>
 #define HWTUNE
