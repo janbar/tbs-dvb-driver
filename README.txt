@@ -18,7 +18,7 @@ version you are using:
 - Branch v6.2 : build drivers with Linux kernel version from 6.2.
 - Branch v6.3 : build drivers with Linux kernel version from 6.3.
 - Branch v6.4 : build drivers with Linux kernel version from 6.4.
-- Branch v6.8 : build drivers with Linux kernel version from 6.5 to 6.8.
+- Branch v6.8 : build drivers with Linux kernel version from 6.5 to 6.9.
 
 See below to install the required firmwares in path /lib/firmware/.
 
