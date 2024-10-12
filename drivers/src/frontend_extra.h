@@ -30,19 +30,21 @@ struct eeprom_info
 	__u8 data;
 };
 
-#define FE_ECP3FW_READ		_IOR('o', 90, struct ecp3_info)
-#define FE_ECP3FW_WRITE		_IOW('o', 91, struct ecp3_info)
+#define FE_ECP3FW_READ    _IOR('o', 90, struct ecp3_info)
+#define FE_ECP3FW_WRITE   _IOW('o', 91, struct ecp3_info)
 
-#define FE_24CXX_READ		_IOR('o', 92, struct mcu24cxx_info)
-#define FE_24CXX_WRITE		_IOW('o', 93, struct mcu24cxx_info)
+#define FE_24CXX_READ     _IOR('o', 92, struct mcu24cxx_info)
+#define FE_24CXX_WRITE    _IOW('o', 93, struct mcu24cxx_info)
 
-#define FE_REGI2C_READ		_IOR('o', 94, struct usbi2c_access)
-#define FE_REGI2C_WRITE		_IOW('o', 95, struct usbi2c_access)
+#define FE_REGI2C_READ    _IOR('o', 94, struct usbi2c_access)
+#define FE_REGI2C_WRITE   _IOW('o', 95, struct usbi2c_access)
 
-#define FE_EEPROM_READ		_IOR('o', 96, struct eeprom_info)
-#define FE_EEPROM_WRITE		_IOW('o', 97, struct eeprom_info)
+#define FE_EEPROM_READ    _IOR('o', 96, struct eeprom_info)
+#define FE_EEPROM_WRITE   _IOW('o', 97, struct eeprom_info)
 
-#define FE_READ_TEMP		_IOR('o', 98, __s16)
+#define FE_READ_TEMP      _IOR('o', 98, __s16)
+
+#define MODCODE_ALL       (~0U)
 
 enum fe_modulation_extra {
 	_QPSK,
