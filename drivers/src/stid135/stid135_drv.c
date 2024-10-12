@@ -1,35 +1,35 @@
 /*
-* This file is part of STiD135 OXFORD LLA 
+ * This file is part of STiD135 OXFORD LLA 
  *
-* Copyright (c) <2014>-<2018>, STMicroelectronics - All Rights Reserved 
-* Author(s): Mathias Hilaire (mathias.hilaire@st.com), Thierry Delahaye (thierry.delahaye@st.com) for STMicroelectronics. 
+ * Copyright (c) <2014>-<2018>, STMicroelectronics - All Rights Reserved 
+ * Author(s): Mathias Hilaire (mathias.hilaire@st.com), Thierry Delahaye (thierry.delahaye@st.com) for STMicroelectronics. 
  *
-* License terms: BSD 3-clause "New" or "Revised" License. 
+ * License terms: BSD 3-clause "New" or "Revised" License. 
  *
-* Redistribution and use in source and binary forms, with or without 
-* modification, are permitted provided that the following conditions are met: 
-* 
-* 1. Redistributions of source code must retain the above copyright notice, this 
-* list of conditions and the following disclaimer. 
-* 
-* 2. Redistributions in binary form must reproduce the above copyright notice, 
-* this list of conditions and the following disclaimer in the documentation 
-* and/or other materials provided with the distribution. 
-* 
-* 3. Neither the name of the copyright holder nor the names of its contributors 
-* may be used to endorse or promote products derived from this software 
-* without specific prior written permission. 
-* 
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
-* AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE 
-* DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE 
-* FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
-* DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR 
-* SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER 
-* CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, 
-* OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
-* OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * Redistribution and use in source and binary forms, with or without 
+ * modification, are permitted provided that the following conditions are met: 
+ * 
+ * 1. Redistributions of source code must retain the above copyright notice, this 
+ * list of conditions and the following disclaimer. 
+ * 
+ * 2. Redistributions in binary form must reproduce the above copyright notice, 
+ * this list of conditions and the following disclaimer in the documentation 
+ * and/or other materials provided with the distribution. 
+ * 
+ * 3. Neither the name of the copyright holder nor the names of its contributors 
+ * may be used to endorse or promote products derived from this software 
+ * without specific prior written permission. 
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE 
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE 
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR 
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER 
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, 
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  *
  */
 
@@ -2249,6 +2249,7 @@ static fe_lla_error_t fe_stid135_set_reg_init_values(fe_stid135_handle_t handle,
 		
 		/* Remove MPEG packetization mode */
 		error |= ChipSetField(pParams->handle_demod, FLD_FC8CODEW_DVBSX_HWARE_TSCFG0_TSFIFO_EMBINDVB(demod), 0);
+		error |= ChipSetField(pParams->handle_demod, FLD_FC8CODEW_DVBSX_HWARE_TSSTATE1_TSOUT_NOSYNC(demod), 0);
 		
 		error |= ChipSetOneRegister(pParams->handle_demod, (u16)REG_RC8CODEW_DVBSX_DEMOD_CARHDR(demod), 0x08);
 		
@@ -3481,6 +3482,7 @@ fe_lla_error_t fe_stid135_init (struct fe_sat_init_params *pInit,
 		pParams->internal_ldo = pInit->internal_ldo;
 		pParams->rf_input_type = pInit->rf_input_type;
 		pParams->ts_nosync = pInit->ts_nosync;
+		pParams->bbframe = pInit->bbframe;
 		/* Init for PID filtering feature */
 		for(i=0;i<8;i++)
 			pParams->pid_flt[i].first_disable_all_command = TRUE;
@@ -4900,6 +4902,11 @@ fe_lla_error_t fe_stid135_manage_matype_info(fe_stid135_handle_t handle,
 			}
 			/* If TS/GS = 10 (GSE-HEM High Efficiency Mode) reset matype force bit, load frames in MPEG packets and disable latency regulation */
 			else if(((genuine_matype>>6) & 0x3) == 0x2){
+				if(pParams->bbframe) {
+					error |= ChipSetField(pParams->handle_demod, FLD_FC8CODEW_DVBSX_PKTDELIN_PDELCTRL2_FORCE_CONTINUOUS(Demod), 1);
+					error |= ChipSetField(pParams->handle_demod, FLD_FC8CODEW_DVBSX_PKTDELIN_PDELCTRL2_FRAME_MODE(Demod), 1);
+				//	error |= ChipSetField(pParams->handle_demod, FLD_FC8CODEW_DVBSX_HWARE_TSSYNC_TSFIFO_SYNCMODE(Demod), 2);
+				}
 				#ifdef USER1
 					/* Force HEM mode */
 					error |= ChipSetField(pParams->handle_demod, FLD_FC8CODEW_DVBSX_PKTDELIN_PDELCTRL0_HEMMODE_SELECT(Demod), 3);
@@ -4912,7 +4919,7 @@ fe_lla_error_t fe_stid135_manage_matype_info(fe_stid135_handle_t handle,
 					} else {
 						error |= ChipSetOneRegister(pParams->handle_demod, (u16)REG_RC8CODEW_DVBSX_HWARE_TSSPEED(Demod), 0x16); // - new management of NCR
 					}
-					error |= ChipSetField(pParams->handle_demod, FLD_FC8CODEW_DVBSX_HWARE_TSSTATE1_TSOUT_NOSYNC(Demod), 0);
+					error |= ChipSetField(pParams->handle_demod, FLD_FC8CODEW_DVBSX_HWARE_TSSTATE1_TSOUT_NOSYNC(Demod), pParams->ts_nosync);
 					/* To avoid reset of stream merger in annexM, ACM or if PID filter is enabled, set pragmatic smoothing mode for computation of TS bit rate */
 					matype_info &= 0x0F;
 					/* Set bit 5 to ignore ISI/MIS bit because not compatible with NCR feature (latency regulation) */
@@ -4923,21 +4930,22 @@ fe_lla_error_t fe_stid135_manage_matype_info(fe_stid135_handle_t handle,
 					error |= ChipSetOneRegister(pParams->handle_demod, (u16)REG_RC8CODEW_DVBSX_HWARE_TSBITRATE1(Demod), 0x80);
 					error |= ChipSetOneRegister(pParams->handle_demod, (u16)REG_RC8CODEW_DVBSX_HWARE_TSBITRATE0(Demod), 0x00);
 				#else
-					error |= ChipSetField(pParams->handle_demod, FLD_FC8CODEW_DVBSX_PKTDELIN_PDELCTRL2_FORCE_CONTINUOUS(Demod), 1);
-					error |= ChipSetField(pParams->handle_demod, FLD_FC8CODEW_DVBSX_PKTDELIN_PDELCTRL2_FRAME_MODE(Demod), 1);
-				//	error |= ChipSetField(pParams->handle_demod, FLD_FC8CODEW_DVBSX_HWARE_TSSYNC_TSFIFO_SYNCMODE(Demod), 2);
-
 					error |= ChipSetField(pParams->handle_demod, FLD_FC8CODEW_DVBSX_HWARE_TSCFG0_TSFIFO_EMBINDVB(Demod), 1);
 					/* Go back to reset value settings */
 					error |= ChipSetField(pParams->handle_demod, FLD_FC8CODEW_DVBSX_HWARE_TSCFG1_TSFIFO_MANSPEED(Demod), 0);
 					error |= ChipSetOneRegister(pParams->handle_demod, (u16)REG_RC8CODEW_DVBSX_HWARE_TSSPEED(Demod), 0xFF);
-					error |= ChipSetField(pParams->handle_demod, FLD_FC8CODEW_DVBSX_HWARE_TSSTATE1_TSOUT_NOSYNC(Demod), 0);
+					error |= ChipSetField(pParams->handle_demod, FLD_FC8CODEW_DVBSX_HWARE_TSSTATE1_TSOUT_NOSYNC(Demod), pParams->ts_nosync);
 					/* Unforce HEM mode */
 					error |= ChipSetField(pParams->handle_demod, FLD_FC8CODEW_DVBSX_PKTDELIN_PDELCTRL0_HEMMODE_SELECT(Demod), 0);
 				#endif
 			}
 			/* If TS/GS = 00 (Generic packetized) or 01 (Generic continuous) force matype/tsgs = 10 and load frames in MPEG packets */
 			else if((((genuine_matype>>6) & 0x3) == 0x0) || ((genuine_matype>>6) & 0x3) == 0x1) {
+				if(pParams->bbframe) {
+					error |= ChipSetField(pParams->handle_demod, FLD_FC8CODEW_DVBSX_PKTDELIN_PDELCTRL2_FORCE_CONTINUOUS(Demod), 1);
+					error |= ChipSetField(pParams->handle_demod, FLD_FC8CODEW_DVBSX_PKTDELIN_PDELCTRL2_FRAME_MODE(Demod), 1);
+				//	error |= ChipSetField(pParams->handle_demod, FLD_FC8CODEW_DVBSX_HWARE_TSSYNC_TSFIFO_SYNCMODE(Demod), 2);
+				}
 				#ifdef USER1
 					/* Force HEM mode */
 					error |= ChipSetField(pParams->handle_demod, FLD_FC8CODEW_DVBSX_PKTDELIN_PDELCTRL0_HEMMODE_SELECT(Demod), 3);
@@ -4950,7 +4958,7 @@ fe_lla_error_t fe_stid135_manage_matype_info(fe_stid135_handle_t handle,
 					} else {
 						error |= ChipSetOneRegister(pParams->handle_demod, (u16)REG_RC8CODEW_DVBSX_HWARE_TSSPEED(Demod), 0x16); // - new management of NCR
 					}
-					error |= ChipSetField(pParams->handle_demod, FLD_FC8CODEW_DVBSX_HWARE_TSSTATE1_TSOUT_NOSYNC(Demod), 0);
+					error |= ChipSetField(pParams->handle_demod, FLD_FC8CODEW_DVBSX_HWARE_TSSTATE1_TSOUT_NOSYNC(Demod), pParams->ts_nosync);
 					/* To avoid reset of stream merger in annexM, ACM or if PID filter is enabled, set pragmatic smoothing mode for computation of TS bit rate */
 					matype_info &= 0x0F;
 					/* Set bit 5 to ignore ISI/MIS bit because not compatible with NCR feature (latency regulation) */
@@ -4961,11 +4969,6 @@ fe_lla_error_t fe_stid135_manage_matype_info(fe_stid135_handle_t handle,
 					error |= ChipSetOneRegister(pParams->handle_demod, (u16)REG_RC8CODEW_DVBSX_HWARE_TSBITRATE1(Demod), 0x80);
 					error |= ChipSetOneRegister(pParams->handle_demod, (u16)REG_RC8CODEW_DVBSX_HWARE_TSBITRATE0(Demod), 0x00);
 				#else
-
-					error |= ChipSetField(pParams->handle_demod, FLD_FC8CODEW_DVBSX_PKTDELIN_PDELCTRL2_FORCE_CONTINUOUS(Demod), 1);
-					error |= ChipSetField(pParams->handle_demod, FLD_FC8CODEW_DVBSX_PKTDELIN_PDELCTRL2_FRAME_MODE(Demod), 1);
-					//error |= ChipSetField(pParams->handle_demod, FLD_FC8CODEW_DVBSX_HWARE_TSSYNC_TSFIFO_SYNCMODE(Demod), 2);
-
 					matype_info &= 0x0F;
 					/* Set bit 5 to ignore ISI/MIS bit because not compatible with NCR feature (latency regulation) */
 					matype_info |= 0xB0;
@@ -4977,7 +4980,7 @@ fe_lla_error_t fe_stid135_manage_matype_info(fe_stid135_handle_t handle,
 					/* Switch to manual CLKOUT frequency processing */
 					error |= ChipSetField(pParams->handle_demod, FLD_FC8CODEW_DVBSX_HWARE_TSCFG1_TSFIFO_MANSPEED(Demod), 3);
 					error |= ChipSetOneRegister(pParams->handle_demod, (u16)REG_RC8CODEW_DVBSX_HWARE_TSSPEED(Demod), 0x18);
-					error |= ChipSetField(pParams->handle_demod, FLD_FC8CODEW_DVBSX_HWARE_TSSTATE1_TSOUT_NOSYNC(Demod), 0);
+					error |= ChipSetField(pParams->handle_demod, FLD_FC8CODEW_DVBSX_HWARE_TSSTATE1_TSOUT_NOSYNC(Demod), pParams->ts_nosync);
 					/* To avoid reset of stream merger in annexM, ACM or if PID filter is enabled, set pragmatic smoothing mode for computation of TS bit rate */
 				#endif
 			}
@@ -5047,7 +5050,7 @@ static fe_lla_error_t fe_stid135_manage_matype_info_raw_bbframe(fe_stid135_handl
 				/* Switch to manual CLKOUT frequency processing */
 				error |= ChipSetField(pParams->handle_demod, FLD_FC8CODEW_DVBSX_HWARE_TSCFG1_TSFIFO_MANSPEED(Demod), 3);
 				error |= ChipSetOneRegister(pParams->handle_demod, (u16)REG_RC8CODEW_DVBSX_HWARE_TSSPEED(Demod), 0x18);
-				error |= ChipSetField(pParams->handle_demod, FLD_FC8CODEW_DVBSX_HWARE_TSSTATE1_TSOUT_NOSYNC(Demod), 0);
+				error |= ChipSetField(pParams->handle_demod, FLD_FC8CODEW_DVBSX_HWARE_TSSTATE1_TSOUT_NOSYNC(Demod), pParams->ts_nosync);
 				/* To avoid reset of stream merger in annexM, ACM or if PID filter is enabled, set pragmatic smoothing mode for computation of TS bit rate */
 			}
 		}
