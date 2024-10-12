@@ -57,6 +57,10 @@ static unsigned int ts_nosync;
 module_param(ts_nosync, int, 0644);
 MODULE_PARM_DESC(ts_nosync, "TS FIFO Minimum latence mode (default:off)");
 
+static unsigned int bbframe;
+module_param(bbframe, int, 0644);
+MODULE_PARM_DESC(bbframe, "BBFrame L3 encapsulation for GCS, GSE-HEM (default:off)");
+
 struct stv_base {
 	struct list_head     stvlist;
 
@@ -85,6 +89,7 @@ struct stv_base {
 	u32  (*set_TSparam)(struct i2c_adapter *i2c,int tuner,int time,bool flag);
 	//end
 	int vglna;
+	bool control_22k; //for 6916
 };
 
 struct stv {
@@ -145,6 +150,7 @@ static int stid135_probe(struct stv *state)
 	init_params.roll_off		=  	FE_SAT_35; // NYQUIST Filter value (used for DVBS1/DSS, DVBS2 is automatic)
 	init_params.tuner_iq_inversion	=	FE_SAT_IQ_NORMAL;
 	init_params.ts_nosync		=	ts_nosync;
+	init_params.bbframe		=	bbframe;
 	err = fe_stid135_init(&init_params,&state->base->handle);
 
 	if (err != FE_LLA_NO_ERROR) {
@@ -212,9 +218,15 @@ static int stid135_probe(struct stv *state)
 		err |= fe_stid135_tuner_enable(p_params->handle_demod, AFE_TUNER3);
 		err |= fe_stid135_tuner_enable(p_params->handle_demod, AFE_TUNER4);
 		err |= fe_stid135_diseqc_init(state->base->handle,AFE_TUNER1, FE_SAT_DISEQC_2_3_PWM);
-		err |= fe_stid135_diseqc_init(state->base->handle,AFE_TUNER2, FE_SAT_22KHZ_Continues);
-		err |= fe_stid135_diseqc_init(state->base->handle,AFE_TUNER3, FE_SAT_DISEQC_2_3_PWM);
-		err |= fe_stid135_diseqc_init(state->base->handle,AFE_TUNER4, FE_SAT_22KHZ_Continues);
+	        err |= fe_stid135_diseqc_init(state->base->handle,AFE_TUNER3, FE_SAT_DISEQC_2_3_PWM);	
+		if(state->base->control_22k){
+		     err |= fe_stid135_diseqc_init(state->base->handle,AFE_TUNER2, FE_SAT_22KHZ_Continues);
+		     err |= fe_stid135_diseqc_init(state->base->handle,AFE_TUNER4, FE_SAT_22KHZ_Continues);
+		}
+		else{
+		      err |= fe_stid135_diseqc_init(state->base->handle,AFE_TUNER2, FE_SAT_DISEQC_2_3_PWM);
+		      err |= fe_stid135_diseqc_init(state->base->handle,AFE_TUNER4, FE_SAT_DISEQC_2_3_PWM);
+		    }
 		if (state->base->set_voltage) {		  
 			state->base->set_voltage(state->base->i2c, SEC_VOLTAGE_13, 0);
 			state->base->set_voltage(state->base->i2c, SEC_VOLTAGE_13, 1);
@@ -354,6 +366,11 @@ static int stid135_set_parameters(struct dvb_frontend *fe)
 	err = FE_STiD135_GetLoFreqHz(state->base->handle, &(search_params.lo_frequency));
 	search_params.lo_frequency *= 1000000;
 
+	err |= fe_stid135_unlock(state->base->handle, state->nr + 1);
+
+	if (err != FE_LLA_NO_ERROR)
+		dev_err(&state->base->i2c->dev, "%s: fe_stid135_unlock error %d !\n", __func__, err);
+
 	dev_dbg(&state->base->i2c->dev, "%s: demod %d + tuner %d\n", __func__, state->nr, state->rf_in);
 	err |= fe_stid135_set_rfmux_path(p_params->handle_demod, state->nr + 1, state->rf_in + 1);
 
@@ -466,10 +483,10 @@ static int stid135_set_parameters(struct dvb_frontend *fe)
 	/* Set ISI after search */
 	if (p->stream_id != NO_STREAM_ID_FILTER) {
 		dev_dbg(&state->base->i2c->dev, "%s: set ISI %d !\n", __func__, p->stream_id & 0xFF);
-		err |= fe_stid135_select_isi(state->base->handle, state->nr + 1, p->stream_id & 0xFF);
+		err |= fe_stid135_set_mis_filtering(state->base->handle, state->nr + 1, TRUE, p->stream_id & 0xFF, 0xFF);
 	} else {
 		dev_dbg(&state->base->i2c->dev, "%s: disable ISI filtering !\n", __func__);
-		err |= fe_stid135_set_mis_filtering(state->base->handle, state->nr + 1, FALSE, 0, 0xFF);				
+		err |= fe_stid135_set_mis_filtering(state->base->handle, state->nr + 1, FALSE, 0, 0xFF);
 	}
 	if (err != FE_LLA_NO_ERROR)
 		dev_err(&state->base->i2c->dev, "%s: fe_stid135_set_mis_filtering error %d !\n", __func__, err);
@@ -668,6 +685,8 @@ static int stid135_read_status(struct dvb_frontend *fe, enum fe_status *status)
 		//err |= fe_stid135_set_maxllr_rate(state->base->handle, state->nr +1, 90);
 
 		*status |= FE_HAS_SIGNAL;
+		dev_dbg(&state->base->i2c->dev, "%s: No lock, signal strength %d dBm !\n", __func__,
+				state->signal_info.power/1000);
 
 		p->strength.len = 2;
 		p->strength.stat[0].scale = FE_SCALE_DECIBEL;
@@ -681,8 +700,8 @@ static int stid135_read_status(struct dvb_frontend *fe, enum fe_status *status)
 
 	if (!state->stats_time ||
 		(time_after(jiffies, state->stats_time))) {
-		/* Prevent retrieving stats faster than once per 5 seconds */
-		state->stats_time = jiffies + msecs_to_jiffies(5000);
+		/* Prevent retrieving stats faster than once per 20 seconds */
+		state->stats_time = jiffies + msecs_to_jiffies(20000);
 
 		err = fe_stid135_get_signal_info(state->base->handle, state->nr + 1, &state->signal_info, 0);
 
@@ -691,6 +710,9 @@ static int stid135_read_status(struct dvb_frontend *fe, enum fe_status *status)
 			mutex_unlock(&state->base->status_lock);
 			return -EIO;
 		}
+
+		dev_dbg(&state->base->i2c->dev, "%s: Locked, signal strength %d dBm, C/N %d dB !\n", __func__,
+				state->signal_info.power/1000, state->signal_info.C_N/10);
 
 		p->strength.len = 2;
 		p->strength.stat[0].scale = FE_SCALE_DECIBEL;
@@ -807,7 +829,8 @@ static int stid135_set_tone(struct dvb_frontend *fe, enum fe_sec_tone_mode tone)
 
 		return 0;
 	}
-
+	if(state->base->control_22k==false)   //for 6916 demod1 ,disable the 22k function.
+		return 0;
 	mutex_lock(&state->base->status_lock);
 	err = fe_stid135_set_22khz_cont(state->base->handle,state->rf_in + 1, tone == SEC_TONE_ON);
 	mutex_unlock(&state->base->status_lock);
@@ -997,13 +1020,8 @@ static struct dvb_frontend_ops stid135_ops = {
 	.delsys = { SYS_DVBS, SYS_DVBS2, SYS_DSS },
 	.info = {
 		.name			= "STiD135 Multistandard",
-#ifdef MHz
 		.frequency_min_hz	 = 950 * MHz,
 		.frequency_max_hz 	= 2150 * MHz,
-#else
-		.frequency_min		= 950000,
-		.frequency_max		= 2150000,
-#endif
 		.symbol_rate_min	= 100000,
 		.symbol_rate_max	= 520000000,
 		.caps			= FE_CAN_INVERSION_AUTO |
@@ -1034,7 +1052,7 @@ static struct dvb_frontend_ops stid135_ops = {
 //	.spi_write			= spi_write,
 //	.eeprom_read			= eeprom_read,
 //	.eeprom_write			= eeprom_write,
-//	.read_temp			= stid135_read_temp,
+//    .read_temp			= stid135_read_temp,
 };
 
 static struct stv_base *match_base(struct i2c_adapter  *i2c, u8 adr)
@@ -1080,6 +1098,7 @@ struct dvb_frontend *stid135_attach(struct i2c_adapter *i2c,
 		base->set_TSsampling = cfg->set_TSsampling;
 		base->set_TSparam  = cfg->set_TSparam;
 		base->vglna		=	cfg->vglna;    //for stvvglna 6909x v2 6903x v2
+		base->control_22k	= cfg->control_22k;
 
 		mutex_init(&base->status_lock);
 
