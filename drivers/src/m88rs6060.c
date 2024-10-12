@@ -55,14 +55,8 @@ struct m88rs6060_dev {
 	u64 post_bit_count;
 	struct m88rs6060_base *base;
 	struct si5351_priv *priv;
-	void (*write_properties)(struct i2c_adapter * i2c, u8 reg, u32 buf);
-	void (*read_properties)(struct i2c_adapter * i2c, u8 reg, u32 * buf);
-
-	void (*write_eeprom) (struct i2c_adapter *i2c,u8 reg, u8 buf);
-	void (*read_eeprom) (struct i2c_adapter *i2c,u8 reg, u8 *buf);
-
 	bool newTP;
-	
+
 };
 
 static u16 mes_log10[] = {
@@ -257,8 +251,8 @@ static  struct MT_FE_PLS_INFO mPLSInfoTable[] =
 	 {0xA3, 	  TRUE,   MtFeType_DvbS2X,	  MtFeModMode_16Apsk,	  MtFeCodeRate_23_36,	  TRUE,   FALSE,		 0},
 	 {0xA4, 	  TRUE,   MtFeType_DvbS2X,	  MtFeModMode_16Apsk_L,   MtFeCodeRate_2_3, 	  FALSE,  FALSE,		 0},
 	 {0xA5, 	  TRUE,   MtFeType_DvbS2X,	  MtFeModMode_16Apsk_L,   MtFeCodeRate_2_3, 	  TRUE,   FALSE,		 0},
-	 {0xA6, 	  TRUE,   MtFeType_DvbS2X,	  MtFeModMode_16Apsk,	  MtFeCodeRate_8_15,	  FALSE,  FALSE,		 0},
-	 {0xA7, 	  TRUE,   MtFeType_DvbS2X,	  MtFeModMode_16Apsk,	  MtFeCodeRate_8_15,	  TRUE,   FALSE,		 0},
+	 {0xA6, 	  TRUE,   MtFeType_DvbS2X,	  MtFeModMode_16Apsk,	  MtFeCodeRate_25_36,	  FALSE,  FALSE,		 0},
+	 {0xA7, 	  TRUE,   MtFeType_DvbS2X,	  MtFeModMode_16Apsk,	  MtFeCodeRate_25_36,	  TRUE,   FALSE,		 0},
 	 {0xA8, 	  TRUE,   MtFeType_DvbS2X,	  MtFeModMode_16Apsk,	  MtFeCodeRate_13_18,	  FALSE,  FALSE,		 0},
 	 {0xA9, 	  TRUE,   MtFeType_DvbS2X,	  MtFeModMode_16Apsk,	  MtFeCodeRate_13_18,	  TRUE,   FALSE,		 0},
 	 {0xAA, 	  TRUE,   MtFeType_DvbS2X,	  MtFeModMode_16Apsk,	  MtFeCodeRate_7_9, 	  FALSE,  FALSE,		 0},
@@ -1961,6 +1955,14 @@ static int m88rs6060_set_frontend(struct dvb_frontend *fe)
 		goto err;
 	}
 
+	if(dev->config.RF_switch)
+		dev->config.RF_switch(i2c,dev->config.num,0);  //
+	if(dev->config.TS_switch)
+		dev->config.TS_switch(i2c,1);  //
+		
+	if(dev->config.LED_switch)
+		dev->config.LED_switch(i2c,2);  //
+				
 	mutex_lock(&dev->base->i2c_mutex);
 	
 	symbol_rate_KSs = c->symbol_rate / 1000;
@@ -2208,7 +2210,7 @@ static enum dvbfe_algo m88rs6060_get_algo(struct dvb_frontend *fe)
 
 static int m88rs6060_init(struct dvb_frontend *fe)
 {
-		struct i2c_client *client = fe->demodulator_priv;
+	struct i2c_client *client = fe->demodulator_priv;
 	struct m88rs6060_dev *dev = i2c_get_clientdata(client);
 	struct i2c_adapter *i2c = dev->base->i2c;
 	struct dtv_frontend_properties *c = &fe->dtv_property_cache;
@@ -2428,24 +2430,24 @@ static int m88rs6060_set_clock_ratio(struct m88rs6060_dev *dev )
 	m88rs6060_get_channel_info(dev,&p_info);
 
 	if(p_info.type==MtFeType_DvbS2){
-
-       switch(p_info.mod_mode)
-        {
-            case MtFeModMode_8psk:
-            case MtFeModMode_8Apsk_L:       mod_fac = 3; break;
-            case MtFeModMode_16Apsk:
-            case MtFeModMode_16Apsk_L:      mod_fac = 4; break;
-            case MtFeModMode_32Apsk:
-            case MtFeModMode_32Apsk_L:      mod_fac = 5; break;
-            case MtFeModMode_64Apsk:
-            case MtFeModMode_64Apsk_L:      mod_fac = 6; break;
-            case MtFeModMode_128Apsk:
-            case MtFeModMode_128Apsk_L:     mod_fac = 7; break;
-            case MtFeModMode_256Apsk:
-            case MtFeModMode_256Apsk_L:     mod_fac = 8; break;
-            case MtFeModMode_Qpsk:
-            default:                        mod_fac = 2; break;
-        }
+		dev_dbg(&i2c->dev, "iPlsCode = 0x%02X\n", p_info.iPlsCode);
+		switch(p_info.mod_mode)
+		{
+			case MtFeModMode_8psk:
+			case MtFeModMode_8Apsk_L:       mod_fac = 3; break;
+			case MtFeModMode_16Apsk:
+			case MtFeModMode_16Apsk_L:      mod_fac = 4; break;
+			case MtFeModMode_32Apsk:
+			case MtFeModMode_32Apsk_L:      mod_fac = 5; break;
+			case MtFeModMode_64Apsk:
+			case MtFeModMode_64Apsk_L:      mod_fac = 6; break;
+			case MtFeModMode_128Apsk:
+			case MtFeModMode_128Apsk_L:     mod_fac = 7; break;
+			case MtFeModMode_256Apsk:
+			case MtFeModMode_256Apsk_L:     mod_fac = 8; break;
+			case MtFeModMode_Qpsk:
+			default:                        mod_fac = 2; break;
+		}
 		switch(p_info.code_rate)
 		{
 			case MtFeCodeRate_1_4:		input_datarate = locked_sym_rate_KSs*mod_fac/8/4;		break;
@@ -2501,10 +2503,7 @@ static int m88rs6060_set_clock_ratio(struct m88rs6060_dev *dev )
 				regmap_write(dev->regmap,0x0a,0x01);
 			else
 				regmap_write(dev->regmap,0x0a,0x00);
-
-	
 		}else{
-		
 			iSerialMclkHz = input_datarate*49/5;
 			input_datarate = input_datarate *105/100;
 			if(iSerialMclkHz>115200)
@@ -2542,19 +2541,16 @@ static int m88rs6060_set_clock_ratio(struct m88rs6060_dev *dev )
 			}
 			tmp1 = (u8) ((divid_ratio/2)-1);
 			tmp2 = DIV_ROUND_UP(divid_ratio,2)-1;
-		
-		
-		tmp1 &= 0x3f;
-		tmp2 &= 0x3f;
-		val = (tmp1 >>2)&0x0f;
-		regmap_update_bits(dev->regmap,0xfe,0x0f,val);
-		val = (u8)(((tmp1&0x3)<<6)|tmp2);
-		regmap_write(dev->regmap,0xea,val);
+			tmp1 &= 0x3f;
+			tmp2 &= 0x3f;
+			val = (tmp1 >>2)&0x0f;
+			regmap_update_bits(dev->regmap,0xfe,0x0f,val);
+			val = (u8)(((tmp1&0x3)<<6)|tmp2);
+			regmap_write(dev->regmap,0xea,val);
 		}
 	}
 	else{    //dvbs
 	  mod_fac = 2;
-
 	  switch(p_info.code_rate){
 	  	case MtFeCodeRate_1_2:		input_datarate = locked_sym_rate_KSs*mod_fac/2/8;		break;
 		case MtFeCodeRate_2_3:		input_datarate = locked_sym_rate_KSs*mod_fac*2/3/8;		break;
@@ -2562,7 +2558,6 @@ static int m88rs6060_set_clock_ratio(struct m88rs6060_dev *dev )
 		case MtFeCodeRate_5_6:		input_datarate = locked_sym_rate_KSs*mod_fac*5/6/8;		break;
 		case MtFeCodeRate_7_8:		input_datarate = locked_sym_rate_KSs*mod_fac*7/8/8;		break;
 		default:		input_datarate = locked_sym_rate_KSs*mod_fac*3/4/8;		break;
-
 	  }
 		rs6060_get_ts_mclk(dev,&Mclk_KHz);
 
@@ -2671,7 +2666,7 @@ static int m88rs6060_read_status(struct dvb_frontend *fe,
 	dev->fe_status = *status;
 	dev_dbg(&i2c->dev, "lock=%02x status=%02x\n", utmp, *status);
 
-	if ((dev->fe_status & FE_HAS_LOCK)&&(dev->TsClockChecked)){
+	if ((!dev->config.ts_autoclock)&&(dev->fe_status & FE_HAS_LOCK)&&(dev->TsClockChecked)){
 		dev->TsClockChecked = false;
 		dev->frequecy = c->frequency;
 		m88rs6060_set_clock_ratio(dev);
@@ -3184,7 +3179,6 @@ static int m88rs6060_tune(struct dvb_frontend *fe, bool re_tune,
 
 	return 0;
 }
-
 static int m88rs6060_get_frontend(struct dvb_frontend *fe, struct dtv_frontend_properties *p)
 {
 	struct i2c_client *client = fe->demodulator_priv;
@@ -3264,7 +3258,6 @@ static int m88rs6060_get_frontend(struct dvb_frontend *fe, struct dtv_frontend_p
 
  return 0;
 }
-
 static void m88rs6060_spi_read(struct dvb_frontend *fe,
 			       struct ecp3_info *ecp3inf)
 {
@@ -3272,8 +3265,8 @@ static void m88rs6060_spi_read(struct dvb_frontend *fe,
 	struct m88rs6060_dev *dev = i2c_get_clientdata(client);
 	struct i2c_adapter *i2c = dev->base->i2c;
 
-	if (dev->read_properties)
-		dev->read_properties(i2c, ecp3inf->reg,
+	if (dev->config.read_properties)
+		dev->config.read_properties(i2c, ecp3inf->reg,
 				     &(ecp3inf->data));
 
 	return;
@@ -3286,8 +3279,8 @@ static void m88rs6060_spi_write(struct dvb_frontend *fe,
 	struct m88rs6060_dev *dev = i2c_get_clientdata(client);
 	struct i2c_adapter *i2c = dev->base->i2c;
 
-	if (dev->write_properties)
-		dev->write_properties(i2c, ecp3inf->reg,
+	if (dev->config.write_properties)
+		dev->config.write_properties(i2c, ecp3inf->reg,
 				      ecp3inf->data);
 	return;
 }
@@ -3298,8 +3291,8 @@ static void m88rs6060_eeprom_read(struct dvb_frontend *fe, struct eeprom_info *e
 	struct m88rs6060_dev *dev = i2c_get_clientdata(client);
 	struct i2c_adapter *i2c = dev->base->i2c;
 
-	if (dev->read_eeprom)
-		dev->read_eeprom(i2c, eepinf->reg,
+	if (dev->config.read_eeprom)
+		dev->config.read_eeprom(i2c, eepinf->reg,
 				      &(eepinf->data));
 	return ;
 }
@@ -3310,8 +3303,8 @@ static void m88rs6060_eeprom_write(struct dvb_frontend *fe,struct eeprom_info *e
 	struct m88rs6060_dev *dev = i2c_get_clientdata(client);
 	struct i2c_adapter *i2c = dev->base->i2c;
 
-	if (dev->write_eeprom)
-		dev->write_eeprom(i2c, eepinf->reg,
+	if (dev->config.write_eeprom)
+		dev->config.write_eeprom(i2c, eepinf->reg,
 				      eepinf->data);
 	return ;
 }
@@ -3489,11 +3482,15 @@ static int m88rs6060_probe(struct i2c_client *client,
 	dev->config.ts_mode = cfg->ts_mode;
 	dev->config.i2c_wr_max = cfg->i2c_wr_max;
 	dev->config.ts_pinswitch = cfg->ts_pinswitch;
+	dev->config.ts_autoclock = cfg->ts_autoclock;
 	dev->config.repeater_value = cfg->repeater_value;
 	dev->config.read_properties = cfg->read_properties;
 	dev->config.write_properties = cfg->write_properties;
 	dev->config.read_eeprom = cfg->read_eeprom;
 	dev->config.write_eeprom = cfg->write_eeprom;
+	dev->config.RF_switch	= cfg->RF_switch;
+	dev->config.TS_switch = cfg->TS_switch;
+	dev->config.LED_switch = cfg->LED_switch;
 	dev->config.envelope_mode = cfg->envelope_mode;
 	dev->config.disable_22k   = cfg->disable_22k;
 	dev->TsClockChecked = false;
@@ -3510,7 +3507,6 @@ static int m88rs6060_probe(struct i2c_client *client,
 		base->count++;
 		dev->base = base;
 	}else{
-		
 		base = kzalloc(sizeof(struct m88rs6060_base),GFP_KERNEL);
 		if(!base)
 			goto err_kfree;
@@ -3523,28 +3519,26 @@ static int m88rs6060_probe(struct i2c_client *client,
 	}
 	
 	dev->regmap = regmap_init_i2c(client, &regmap_config);
-		if (IS_ERR(dev->regmap)) {
-			ret = PTR_ERR(dev->regmap);
-			goto err_base_kfree;
-		}
-		/*check demod i2c */
-		ret = regmap_read(dev->regmap, 0x00, &tmp);
-		if (ret)
-			goto err_regmap_exit;	
-		if (tmp != 0xe2)
-			goto err_regmap_exit;
-				
+	if (IS_ERR(dev->regmap)) {
+		ret = PTR_ERR(dev->regmap);
+		goto err_base_kfree;
+	}
+	/*check demod i2c */
+	ret = regmap_read(dev->regmap, 0x00, &tmp);
+	if (ret)
+		goto err_regmap_exit;	
+	if (tmp != 0xe2)
+	{
+		ret = -ENODEV;
+		goto err_regmap_exit;
+	}
 
 	dev->mclk = 96000;
 
 	memcpy(&dev->fe.ops, &m88rs6060_ops, sizeof(struct dvb_frontend_ops));
 	*cfg->fe = &dev->fe;
 	dev->fe_status = 0;
-	dev->write_properties = cfg->write_properties;
-	dev->read_properties = cfg->read_properties;
-	dev->write_eeprom = cfg->write_eeprom;
-	dev->read_eeprom = cfg->read_eeprom;
-	
+
 	if(dev->config.HAS_CI){  //for 6910SECI
 		//for ci clk si5351
 		struct si5351_priv *priv;
@@ -3600,7 +3594,11 @@ static int m88rs6060_probe(struct i2c_client *client,
  err_regmap_exit:
 	regmap_exit(dev->regmap);
  err_base_kfree:
-	kfree(base);
+	base->count--;
+	if (base->count==0) {
+		list_del(&base->m88rs6060list);
+		kfree(base);
+	}
  err_kfree:
 	kfree(dev);
 	
@@ -3617,15 +3615,15 @@ static void m88rs6060_remove(struct i2c_client *client)
 	dev->base->count --;
 	if(dev->base->count==0)
 	{	
-	list_del(&dev->base->m88rs6060list);
-	kfree(dev->base);	 
+		list_del(&dev->base->m88rs6060list);
+		kfree(dev->base);	 
 	}
 	if(dev->priv){
 		dev->priv->base1->count --;
 		if(dev->priv->base1->count==0){
 			list_del(&dev->priv->base1->si5351list);
 			kfree(dev->priv);	 
-			}
+		}
 	}
 	regmap_exit(dev->regmap);
 	dev->fe.ops.release = NULL;
