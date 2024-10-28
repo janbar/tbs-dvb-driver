@@ -15,9 +15,7 @@ Clone or download the right branch of this repository, depending on the kernel
 version you are using:
 
 - Branch v5.19: build drivers with Linux kernel version from 5.4 to 5.19.
-- Branch v6.2 : build drivers with Linux kernel version from 6.2.
-- Branch v6.3 : build drivers with Linux kernel version from 6.3.
-- Branch v6.4 : build drivers with Linux kernel version from 6.4 and up*.
+- Branch v6.X : build drivers with Linux kernel version 6.X where X=MAJOR_REVISION i.e 6.2.
 
 See below to install the required firmwares in path /lib/firmware/.
 
