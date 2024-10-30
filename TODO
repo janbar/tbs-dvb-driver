@@ -1,0 +1,13 @@
+Upgrading the drivers tree
+==========================
+
+See drivers/README.txt to test the build with the targeted kernel sources.
+The new version must be bumped by setting the variable PACKAGE_VERSION in
+the file dkms.conf. The version tag should use the following format:
+
+PACKAGE_VERSION=$KERNEL.$MAJOR_REV-$DATESTAMP
+
+For all supported kernel version, make a dedicated branch as follows.
+
+git checkout -b v$KERNEL.$MAJOR_REV
+
