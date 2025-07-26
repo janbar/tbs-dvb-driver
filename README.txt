@@ -15,7 +15,7 @@ Clone or download the right branch of this repository, depending on the kernel
 version you are using:
 
 - Branch v5.19: build drivers with Linux kernel version from 5.4 to 5.19.
-- Branch v6.2 : build drivers with Linux kernel version from 6.2 and up*.
+- Branch v6.X : build drivers with Linux kernel version 6.X where X=MAJOR_REVISION i.e 6.1.
 
 See below to install the required firmwares in path /lib/firmware/.
 
@@ -23,15 +23,15 @@ HOWTO
 =====
 
 cd /usr/src/
-wget https://github.com/janbar/tbs-dvb-driver/archive/refs/heads/v6.2.tar.gz
-tar xvfz v6.2.tar.gz
+wget https://github.com/janbar/tbs-dvb-driver/archive/refs/heads/v6.1.tar.gz
+tar xvfz v6.1.tar.gz
 
-tar xvfz tbs-dvb-driver-6.2/dvb-firmwares.tar.gz -C /lib/firmware
+tar xvfz tbs-dvb-driver-6.13/dvb-firmwares.tar.gz -C /lib/firmware
 chown root:root /lib/firmware/*.fw
 
-dkms add tbs-dvb-driver/6.2
-dkms build tbs-dvb-driver/6.2
-dkms install tbs-dvb-driver/6.2
+dkms add tbs-dvb-driver/6.1
+dkms build tbs-dvb-driver/6.1
+dkms install tbs-dvb-driver/6.1
 
 Once installed, the modules will be rebuilt and deployed when upgrading the
 kernel. If not for any reason, type manually the install step with dkms.
