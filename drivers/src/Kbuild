@@ -15,6 +15,7 @@ obj-m += mn88436.o
 obj-m += rda5816.o
 obj-m += gx1133.o
 obj-m += cxd2878.o
+obj-m += r850.o
 
 stid135-objs := stid135/stid135-fe.o stid135/chip.o stid135/stfe_utilities.o stid135/oxford_anafe_func.o
 stid135-objs += stid135/stid135_init.o stid135/stid135_drv.o
