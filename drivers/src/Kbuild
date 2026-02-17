@@ -22,7 +22,8 @@ stid135-objs += stid135/stid135_init.o stid135/stid135_drv.o
 ccflags-y += -DHOST_PC
 obj-m += stid135.o
 
-tbsecp3-objs := tbsecp3-core.o tbsecp3-cards.o tbsecp3-i2c.o tbsecp3-dma.o tbsecp3-dvb.o tbsecp3-ca.o tbsecp3-asi.o
+tbsecp3-objs := tbsecp3-core.o tbsecp3-cards.o tbsecp3-i2c.o tbsecp3-dma.o tbsecp3-dvb.o tbsecp3-ca.o
+tbsecp3-objs += tbsecp3-asi.o tbsecp3-ci.o
 obj-m += tbsecp3.o
 
 tbs_pcie-mod-objs += tbsmod/tbsmod.o
@@ -30,6 +31,9 @@ obj-m += tbs_pcie-mod.o
 
 tbs_pcie-ci-objs += tbsci/tbsci.o
 obj-m += tbs_pcie-ci.o
+
+tns_priv-objs := tbs_priv.o
+obj-m += tbs_priv.o
 
 ccflags-y += -DCONFIG_MEDIA_CONTROLLER=1
 ccflags-y += -DCONFIG_MEDIA_CONTROLLER_DVB=1
