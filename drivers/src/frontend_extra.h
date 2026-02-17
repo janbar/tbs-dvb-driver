@@ -46,37 +46,10 @@ struct eeprom_info
 
 #define MODCODE_ALL       (~0U)
 
-enum fe_modulation_extra {
-	_QPSK,
-	_QAM_16,
-	_QAM_32,
-	_QAM_64,
-	_QAM_128,
-	_QAM_256,
-	_QAM_AUTO,
-	_VSB_8,
-	_VSB_16,
-	_PSK_8,
-	_APSK_16,
-	_APSK_32,
-	_DQPSK,
-	_QAM_4_NR,
-	_QAM_1024,
-	_QAM_4096,
-	_APSK_8_L,
-	_APSK_16_L,
-	_APSK_32_L,
-	_APSK_64,
-	_APSK_64_L,
-
-	QAM_512,
-	APSK_128,
-	APSK_128_L,
-	APSK_256,
-	APSK_256_L,
-	APSK_1024,
-};
-
+/*
+ * see ${KERNELDIR}/include/uapi/linux/dvb/frontend.h
+ * enum fe_code_rate
+ */
 enum fe_code_rate_extra {
 	_FEC_NONE = 0,
 	_FEC_1_2,
@@ -120,6 +93,45 @@ enum fe_code_rate_extra {
   FEC_R_5E,
 };
 
+/*
+ * see ${KERNELDIR}/include/uapi/linux/dvb/frontend.h
+ * enum fe_modulation
+ */
+enum fe_modulation_extra {
+	_QPSK,
+	_QAM_16,
+	_QAM_32,
+	_QAM_64,
+	_QAM_128,
+	_QAM_256,
+	_QAM_AUTO,
+	_VSB_8,
+	_VSB_16,
+	_PSK_8,
+	_APSK_16,
+	_APSK_32,
+	_DQPSK,
+	_QAM_4_NR,
+	_QAM_1024,
+	_QAM_4096,
+	_APSK_8_L,
+	_APSK_16_L,
+	_APSK_32_L,
+	_APSK_64,
+	_APSK_64_L,
+
+	QAM_512,
+	APSK_128,
+	APSK_128_L,
+	APSK_256,
+	APSK_256_L,
+	APSK_1024,
+};
+
+/*
+ * see ${KERNELDIR}/include/uapi/linux/dvb/frontend.h
+ * enum fe_rolloff
+ */
 enum fe_rolloff_extra {
 	_ROLLOFF_35,
 	_ROLLOFF_20,
