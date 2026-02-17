@@ -43,4 +43,12 @@ ccflags-y += -Idrivers/media/dvb-core
 ccflags-y += -Idrivers/media/dvb-frontends
 ccflags-y += -I$(M)/stid135
 ccflags-y += -I$(M)
+ccflags-y += -Wno-unused-variable
+ccflags-y += -Wno-unused-result
+ccflags-y += -Wno-unused-function
+ccflags-y += -Wno-unused-label
+ccflags-y += -Wno-missing-prototypes
+ccflags-y += -Wno-missing-declarations
+ccflags-y += -Wno-enum-conversion
+ccflags-y += -Wno-switch
 
