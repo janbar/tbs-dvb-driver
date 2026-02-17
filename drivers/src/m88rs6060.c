@@ -3160,7 +3160,7 @@ static int m88rs6060_tune(struct dvb_frontend *fe, bool re_tune,
 		unsigned int mode_flags,
 		unsigned int *delay, enum fe_status *status)
 {
-	//struct mxl *state = fe->demodulator_priv;
+
 	int r = 0;
 
 	*delay = HZ / 2;
